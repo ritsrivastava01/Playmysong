@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -46,7 +46,7 @@ const tabRows = [
   { string: "E", values: ["—", "—", "—", "—", "—", "—", "—", "—"] },
 ];
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
     <div className="mb-3 flex items-center justify-between">
       <h2 className="text-sm font-semibold tracking-wide text-[#f4f3ed]">
