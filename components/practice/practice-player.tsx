@@ -55,13 +55,16 @@ export function PracticePlayer() {
 
   useEffect(() => {
     if (!playing) return;
-    if (timer.current !== null) window.clearInterval(timer.current);
     timer.current = window.setInterval(() => {
       cursor.current = (cursor.current + 1) % melody.length;
-      void playPosition(cursor.current);
+      const position = melody[cursor.current];
+      setActive(cursor.current);
+      setSelected(position);
+      void playGuitarNote(fretNote(position.stringIndex, position.fret).midi, tone)
+        .catch(() => setError("Audio could not start."));
     }, interval);
-    return () => { if (timer.current !== null) window.clearInterval(timer.current); };
-  }, [tempo]); // Tempo changes restart the note clock.
+    return () => { if (timer.current !== null) window.clearInterval(timer.current); timer.current = null; };
+  }, [playing, tempo, tone, interval]);
 
   useEffect(() => () => { if (timer.current !== null) window.clearInterval(timer.current); }, []);
 
