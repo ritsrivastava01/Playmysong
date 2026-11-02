@@ -31,10 +31,18 @@ export async function playGuitarNote(
   // IMPORTANT: request audio activation synchronously in the tap handler.
   // On iOS Safari, awaiting resume() before creating/starting nodes can lose
   // the user-activation window and leave the first note silent.
-  const resumePromise =
-    context.state === "running" ? Promise.resolve() : context.resume();
+  // Start the resume request synchronously from the click/tap event. This is
+  // the standard autoplay-policy handshake used across modern browsers.
+  if (context.state !== "running") {
+    await context.resume();
+  }
+  if (context.state !== "running") {
+    throw new Error("Audio is blocked. Allow sound for this site and tap again.");
+  }
 
-  const now = context.currentTime;
+  // Schedule only after the context is running so no note is placed against
+  // a suspended/stale audio clock.
+  const now = context.currentTime + 0.015;
   const fundamental = midiToFrequency(midi);
   const duration = tone === "acoustic" ? 1.35 : 1.05;
 
@@ -87,11 +95,6 @@ export async function playGuitarNote(
     pluck.disconnect();
     pluckGain.disconnect();
   };
-
-  await resumePromise;
-  if (context.state !== "running") {
-    throw new Error("Audio is not active. Tap the note again to enable sound.");
-  }
 
   window.setTimeout(() => {
     try {
