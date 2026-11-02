@@ -47,10 +47,6 @@ export function PracticePlayer() {
     setPlaying(true);
     cursor.current = active;
     await playPosition(cursor.current);
-    timer.current = window.setInterval(() => {
-      cursor.current = (cursor.current + 1) % melody.length;
-      void playPosition(cursor.current);
-    }, interval);
   };
 
   useEffect(() => {
