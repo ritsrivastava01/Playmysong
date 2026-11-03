@@ -94,7 +94,7 @@ export function PracticePlayer() {
       setFeedback("Listening paused. Your progress is saved.");
       return;
     }
-    if (listenState === "complete") resetExercise();
+    if (listenState === "complete") { resetExercise(); activeRef.current = 0; }
     if (!navigator.mediaDevices?.getUserMedia) {
       setListenState("error");
       setError("Microphone access is unavailable. Open PlayMySong over HTTPS and use a supported browser.");
@@ -138,16 +138,19 @@ export function PracticePlayer() {
               else { stableMidi = midi; stableFrames = 1; }
               if (stableFrames >= 4) {
                 setCompleted((current) => current.some((item) => item.stringIndex === expected.stringIndex && item.fret === expected.fret) ? current : [...current, expected]);
-                setActive((current) => {
-                  const next = current + 1;
-                  if (next >= exercise.notes.length) {
-                    setListenState("complete");
-                    setFeedback("Excellent! You completed the exercise.");
-                  } else {
-                    setFeedback("Correct note! Now play the next highlighted position.");
-                  }
-                  return Math.min(next, exercise.notes.length - 1);
-                });
+                const next = activeRef.current + 1;
+                if (next >= exercise.notes.length) {
+                  window.cancelAnimationFrame(resources.frame);
+                  resources.stream.getTracks().forEach((track) => track.stop());
+                  void resources.context.close();
+                  listenResources.current = null;
+                  setListenState("complete");
+                  setFeedback("Excellent! You completed the exercise.");
+                } else {
+                  activeRef.current = next;
+                  setActive(next);
+                  setFeedback("Correct note! Now play the next highlighted position.");
+                }
                 stableFrames = 0;
                 stableMidi = -1;
               }
